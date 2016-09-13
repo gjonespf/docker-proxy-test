@@ -1,0 +1,19 @@
+
+  devops-consul-main:
+    image: progrium/consul
+    ports:
+    - "8400:8400"    
+    - "8500:8500"    
+    - "8053:53/udp"    
+    command: -server -bootstrap -ui-dir /ui
+
+  proxy-test:
+    image: traefik:v1.0.2
+    command: -d --consul --consul.endpoint=consul-main:8500 --consul.watch=true --consul.prefix=traefik
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    networks:
+    #- devops-front
+    - devops-back  
