@@ -1,3 +1,5 @@
+version: '2'
+services:
 
   devops-consul-main:
     image: progrium/consul
@@ -7,13 +9,26 @@
     - "8053:53/udp"    
     command: -server -bootstrap -ui-dir /ui
 
+  devops-git2consul-main:
+    image: gavinjonespf/docker-git2consul:latest
+    command: --endpoint devops-consul-main --ignore_file_extension true --port 8500 
+ 
   proxy-test:
     image: traefik:v1.0.2
-    command: -d --consul --consul.endpoint=consul-main:8500 --consul.watch=true --consul.prefix=traefik
+    command: -d --consul --consul.endpoint=devops-consul-main:8500 --consul.watch=true --consul.prefix=traefik
     ports:
       - "80:80"
       - "443:443"
       - "8080:8080"
-    networks:
-    #- devops-front
-    - devops-back  
+ 
+    whoami1:
+    image: emilevauge/whoami
+
+    whoami2:
+    image: emilevauge/whoami
+
+    whoami3:
+    image: emilevauge/whoami
+
+    whoami4:
+    image: emilevauge/whoami
