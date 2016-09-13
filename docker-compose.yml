@@ -1,6 +1,9 @@
 version: '2'
 services:
 
+    #Testing the docs in
+    #https://github.com/containous/traefik/blob/master/docs/user-guide/kv-config.md
+
     devops-consul-main:
         image: progrium/consul
         ports:
@@ -13,10 +16,12 @@ services:
 
     devops-git2consul-main:
         image: gavinjonespf/docker-git2consul:latest
-        #command: --endpoint devops-consul-main --ignore_file_extension true --port 8500
+        env_file: .env
         environment: 
             - CONSUL_ENDPOINT=devops-consul-main
             - CONSUL_PORT=8500
+            - GIT_REPO=https://github.com/gjonespf/docker-proxy-test.git
+            - NAMESPACE=traefik
             - CFG=$CFG
         networks:
            - proxy-test
@@ -31,25 +36,25 @@ services:
         networks:
            - proxy-test
 
-    # whoami1:
-    #     image: emilevauge/whoami
-    #     networks:
-    #         - proxy-test
+    whoami1:
+        image: emilevauge/whoami
+        networks:
+            - proxy-test
 
-    # whoami2:
-    #     image: emilevauge/whoami
-    #     networks:
-    #         - proxy-test
+    whoami2:
+        image: emilevauge/whoami
+        networks:
+            - proxy-test
 
-    # whoami3:
-    #     image: emilevauge/whoami
-    #     networks:
-    #         - proxy-test
+    whoami3:
+        image: emilevauge/whoami
+        networks:
+            - proxy-test
 
-    # whoami4:
-    #     image: emilevauge/whoami
-    #     networks:
-    #         - proxy-test
+    whoami4:
+        image: emilevauge/whoami
+        networks:
+            - proxy-test
 
 networks:
   proxy-test: {}

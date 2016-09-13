@@ -1,0 +1,5 @@
+{
+   "endpoint": "devops-consul-main",
+   "watch": "true",
+   "prefix": "traefik"
+}
