@@ -1,0 +1,10 @@
+{
+   "server1": {
+      "url": "http://whoami3",
+      "weight": 1
+   },
+   "server2": {
+      "url": "http://whoami4",
+      "weight": 2
+   }
+}

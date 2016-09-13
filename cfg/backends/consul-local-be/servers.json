@@ -1,6 +1,6 @@
 {
    "server1": {
-      "url": "http://devops-consul-main:8080",
+      "url": "http://devops-consul-main:8500",
       "weight": "1"
    }
 }

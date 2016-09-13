@@ -1,0 +1,3 @@
+{
+   "expression": "NetworkErrorRatio() > 0.5"
+}

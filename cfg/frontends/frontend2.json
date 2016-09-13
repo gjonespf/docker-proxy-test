@@ -1,0 +1,11 @@
+{
+   "backend":"backend1",
+   "passHostHeader": "true",
+   "priority": "10",
+   "entrypoints": "http,https",
+   "routes": {
+      "test_2": {
+         "rule": "PathPrefix:/test"
+      }
+   }
+}
