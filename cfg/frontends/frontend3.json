@@ -1,0 +1,11 @@
+{
+   "backend": "backend2",
+   "passHostHeader": "true",
+   "priority": "10",
+   "entrypoints": "http,https",
+   "routes": {
+      "test_1": {
+         "rule": "Host:sectest.docker"
+      }
+   }
+}
