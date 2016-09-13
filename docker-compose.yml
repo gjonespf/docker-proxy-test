@@ -1,34 +1,55 @@
 version: '2'
 services:
 
-  devops-consul-main:
-    image: progrium/consul
-    ports:
-    - "8400:8400"    
-    - "8500:8500"    
-    - "8053:53/udp"    
-    command: -server -bootstrap -ui-dir /ui
+    devops-consul-main:
+        image: progrium/consul
+        ports:
+        - "8400:8400"    
+        - "8500:8500"    
+        - "8053:53/udp"    
+        command: -server -bootstrap -ui-dir /ui
+        networks:
+           - proxy-test
 
-  devops-git2consul-main:
-    image: gavinjonespf/docker-git2consul:latest
-    command: --endpoint devops-consul-main --ignore_file_extension true --port 8500 
- 
-  proxy-test:
-    image: traefik:v1.0.2
-    command: -d --consul --consul.endpoint=devops-consul-main:8500 --consul.watch=true --consul.prefix=traefik
-    ports:
-      - "80:80"
-      - "443:443"
-      - "8080:8080"
- 
-    whoami1:
-    image: emilevauge/whoami
+    devops-git2consul-main:
+        image: gavinjonespf/docker-git2consul:latest
+        #command: --endpoint devops-consul-main --ignore_file_extension true --port 8500
+        environment: 
+            - CONSUL_ENDPOINT=devops-consul-main
+            - CONSUL_PORT=8500
+            - CFG=$CFG
+        networks:
+           - proxy-test
 
-    whoami2:
-    image: emilevauge/whoami
+    proxy-test:
+        image: traefik:v1.0.2
+        command: -d --consul --consul.endpoint=devops-consul-main:8500 --consul.watch=true --consul.prefix=traefik
+        ports:
+            - "80:80"
+            - "443:443"
+            - "8080:8080"
+        networks:
+           - proxy-test
 
-    whoami3:
-    image: emilevauge/whoami
+    # whoami1:
+    #     image: emilevauge/whoami
+    #     networks:
+    #         - proxy-test
 
-    whoami4:
-    image: emilevauge/whoami
+    # whoami2:
+    #     image: emilevauge/whoami
+    #     networks:
+    #         - proxy-test
+
+    # whoami3:
+    #     image: emilevauge/whoami
+    #     networks:
+    #         - proxy-test
+
+    # whoami4:
+    #     image: emilevauge/whoami
+    #     networks:
+    #         - proxy-test
+
+networks:
+  proxy-test: {}
