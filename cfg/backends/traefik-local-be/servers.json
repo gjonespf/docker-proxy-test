@@ -1,0 +1,6 @@
+{
+   "server1": {
+      "url": "http://proxy:8080",
+      "weight": "1"
+   }
+}

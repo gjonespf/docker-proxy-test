@@ -1,0 +1,6 @@
+{
+   "server1": {
+      "url": "http://devops-consul-main:8080",
+      "weight": "1"
+   }
+}

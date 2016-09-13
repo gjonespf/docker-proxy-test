@@ -26,9 +26,10 @@ services:
         networks:
            - proxy-test
 
-    proxy-test:
+    proxy:
         image: traefik:v1.0.2
-        command: -d --consul --consul.endpoint=devops-consul-main:8500 --consul.watch=true --consul.prefix=traefik
+        command: -d --web --web.address=":8080" \
+            --consul --consul.endpoint=devops-consul-main:8500 --consul.watch=true --consul.prefix=traefik
         ports:
             - "80:80"
             - "443:443"

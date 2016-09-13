@@ -1,0 +1,8 @@
+{
+   "backend": "consul-local-be",
+   "routes": {
+      "test_1":{
+         "rule": "Host:consul-web.services.consul"
+      }
+   }
+}

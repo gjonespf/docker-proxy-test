@@ -1,0 +1,8 @@
+{
+   "backend": "traefik-local-be",
+   "routes": {
+      "test_1":{
+         "rule": "Host:traefik.services.consul"
+      }
+   }
+}
