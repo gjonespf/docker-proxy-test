@@ -5,5 +5,5 @@ docker-compose stop devops-consul-main
 docker-compose rm -f --all devops-consul-main
 
 docker-compose up -d
-docker-compose logs -f proxy
+docker-compose logs -f proxy devops-consul-main devops-git2consul-main
 
