@@ -1,5 +1,6 @@
 {
    "backend": "consul-local-be",
+   "entrypoints": "http,https",
    "routes": {
       "test_1":{
          "rule": "Host:consul-web.services.consul"

@@ -23,17 +23,39 @@ services:
             - GIT_REPO=https://github.com/gjonespf/docker-proxy-test.git
             - NAMESPACE=traefik
             - CFG=$CFG
+        links:
+            - devops-consul-main
         networks:
            - proxy-test
 
+
+    selfsign-ssl:
+        image: prologic/mksslcrt
+        entrypoint: /usr/bin/mksslcert /ssl/traefik.key /ssl/traefik.crt *.services.consul
+        restart: never
+        volumes:
+            - proxy-ssl:/ssl/
+
+#            --entryPoints='Name:http Address::80 Redirect.EntryPoint:https' --entryPoints='Name:https Address::443 TLS:tests/traefik.crt,tests/traefik.key' \
     proxy:
         image: traefik:v1.0.2
-        command: -d --web --web.address=":8080" \
+        command: -d \
+            --web --web.address=":8080" \
+            --entryPoints='Name:http Address::80' --entryPoints='Name:https Address::443 TLS:/etc/traefik/customssl/traefik.crt,/etc/traefik/customssl/traefik.key' \
             --consul --consul.endpoint=devops-consul-main:8500 --consul.watch=true --consul.prefix=traefik
         ports:
             - "80:80"
             - "443:443"
             - "8080:8080"
+        links:
+            - selfsign-ssl
+            - devops-consul-main
+            - devops-git2consul-main
+        volumes:
+#            - /var/run/docker.sock:/var/run/docker.sock
+            - proxy-acme-data:/etc/traefik/acme/
+            - proxy-ssl:/etc/traefik/customssl/
+            - /dev/null:/etc/traefik/traefik.toml
         networks:
            - proxy-test
 
@@ -56,6 +78,10 @@ services:
         image: emilevauge/whoami
         networks:
             - proxy-test
+
+volumes:
+  proxy-acme-data: {}
+  proxy-ssl: {}
 
 networks:
   proxy-test: {}

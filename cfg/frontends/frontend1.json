@@ -1,5 +1,6 @@
 {
    "backend": "backend2",
+   "entrypoints": "http",
    "routes": {
       "test_1": {
          "rule": "Host:test.docker"
