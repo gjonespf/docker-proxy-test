@@ -3,7 +3,7 @@
    "entrypoints": "http,https",
    "routes": {
       "test_1":{
-         "rule": "Host:traefik.services.consul"
+         "rule": "Host:traefik.services.consul,traefik.docker"
       }
    }
 }
