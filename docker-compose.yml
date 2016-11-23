@@ -12,8 +12,6 @@ services:
             - "8053:53/udp"    
         networks:
             - proxy-test
-        links:
-            - proxy   
         env_file: 
             - .env
             - .env.local
@@ -52,14 +50,13 @@ services:
             - "traefik.enable=false"
 
 #
-#            --consul --consul.endpoint="devops-consul-main:8500" --consul.watch=true --consul.prefix=${TRAEFIK_NAMESPACE} \
 #            --consulCatalog --consulCatalog.endpoint="devops-consul-main:8500" --consulCatalog.watch=true --consulCatalog.domain="$DOCKER_DC.$DOCKER_BASEDOMAIN" \
     proxy:
         image: ${TRAEFIK_IMAGE}:${TRAEFIK_TAG_VERSION}
         command: -d \
             --web --web.address=":8080" --web.readonly=true \
             --entryPoints='Name:http Address::80' --entryPoints='Name:https Address::443 TLS:/etc/traefik/customssl/traefik.crt,/etc/traefik/customssl/traefik.key' \
-            --consul --consul.endpoint=devops-consul-main:8500 --consul.watch=true --consul.prefix=${TRAEFIK_NAMESPACE} \
+            --consul --consul.endpoint="devops-consul-main:8500" --consul.watch=true --consul.prefix=${TRAEFIK_NAMESPACE} \
             --docker --docker.endpoint="unix:///var/run/docker.sock" --docker.watch=true --docker.domain=$DOCKER_DC.$DOCKER_BASEDOMAIN --docker.exposedbydefault=false 
         ports:
             - "80:80"
@@ -80,6 +77,8 @@ services:
             - proxy-acme-data:/etc/traefik/acme/
             - proxy-ssl:/etc/traefik/customssl/
             - /dev/null:/etc/traefik/traefik.toml
+        links:
+            - devops-consul-main
         networks:
            - proxy-test
 
