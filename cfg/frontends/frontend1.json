@@ -3,7 +3,7 @@
    "entrypoints": "http",
    "routes": {
       "test_1": {
-         "rule": "Host:test.docker"
+         "rule": "Host:test.services.consul,test.docker"
       }
    }
 }

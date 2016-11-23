@@ -12,7 +12,7 @@ Makes a few simple assumptions, but tries to stay self contained.
 - Running Docker 1.11+ (for Compose DNS stuff)
 - Docker Compose 1.7+
 - Can access the interwebs
-- That DNS for *.services.consul and *.docker are pointing at your test docker machine
+- That DNS for *.services.consul and *.docker are pointing at your test docker machine (test scenarios work for both)
 
 Example tested versions
 ```bash

@@ -17,6 +17,7 @@ services:
     devops-git2consul-main:
         image: gavinjonespf/docker-git2consul:latest
         env_file: .env
+        env_file: .env.local
         environment: 
             - CONSUL_ENDPOINT=devops-consul-main
             - CONSUL_PORT=8500
