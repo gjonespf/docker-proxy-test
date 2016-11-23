@@ -5,30 +5,42 @@ services:
     #https://github.com/containous/traefik/blob/master/docs/user-guide/kv-config.md
 
     devops-consul-main:
-        image: progrium/consul
+        image: consul:v0.7.0
         ports:
-        - "8400:8400"    
-        - "8500:8500"    
-        - "8053:53/udp"    
-        command: -server -bootstrap -ui-dir /ui
+            - "8400:8400"    
+            - "8500:8500"    
+            - "8053:53/udp"    
         networks:
-           - proxy-test
+            - proxy-test
+        links:
+            - proxy   
+        env_file: 
+            - .env
+            - .env.local
+        labels:
+            - "traefik.backend=consul-web"
+            - "traefik.frontend.rule=Host:consul-web.$DOCKER_DC.$DOCKER_BASEDOMAIN,consul-web.docker"
+            - "traefik.port=8500"
+            - "traefik.frontend.entryPoints=http,https"
+            - "traefik.enable=true"
 
     devops-git2consul-main:
         image: gavinjonespf/docker-git2consul:latest
-        env_file: .env
-        env_file: .env.local
-        environment: 
-            - CONSUL_ENDPOINT=devops-consul-main
-            - CONSUL_PORT=8500
-            - GIT_REPO=https://github.com/gjonespf/docker-proxy-test.git
-            - NAMESPACE=traefik
-            - CFG=$CFG
         links:
             - devops-consul-main
         networks:
-           - proxy-test
-
+            - proxy-test
+        env_file: 
+            - .env
+            - .env.local
+        environment: 
+            - CONSUL_ENDPOINT=devops-consul-main
+            - CONSUL_PORT=8500
+            - GIT_REPO=${CONSUL_GIT_REPO}
+            - NAMESPACE=${TRAEFIK_NAMESPACE}
+            - CFG=$CFG
+        labels:
+            - "traefik.enable=false"
 
     selfsign-ssl:
         image: prologic/mksslcrt
@@ -36,30 +48,42 @@ services:
         restart: never
         volumes:
             - proxy-ssl:/ssl/
+        labels:
+            - "traefik.enable=false"
 
-#            --entryPoints='Name:http Address::80 Redirect.EntryPoint:https' --entryPoints='Name:https Address::443 TLS:tests/traefik.crt,tests/traefik.key' \
+#
+#            --consul --consul.endpoint="devops-consul-main:8500" --consul.watch=true --consul.prefix=${TRAEFIK_NAMESPACE} \
+#            --consulCatalog --consulCatalog.endpoint="devops-consul-main:8500" --consulCatalog.watch=true --consulCatalog.domain="$DOCKER_DC.$DOCKER_BASEDOMAIN" \
     proxy:
-        image: traefik:v1.0.2
+        image: ${TRAEFIK_IMAGE}:${TRAEFIK_TAG_VERSION}
         command: -d \
-            --web --web.address=":8080" \
+            --web --web.address=":8080" --web.readonly=true \
             --entryPoints='Name:http Address::80' --entryPoints='Name:https Address::443 TLS:/etc/traefik/customssl/traefik.crt,/etc/traefik/customssl/traefik.key' \
-            --consul --consul.endpoint=devops-consul-main:8500 --consul.watch=true --consul.prefix=traefik
+            --consul --consul.endpoint=devops-consul-main:8500 --consul.watch=true --consul.prefix=${TRAEFIK_NAMESPACE} \
+            --docker --docker.endpoint="unix:///var/run/docker.sock" --docker.watch=true --docker.domain=$DOCKER_DC.$DOCKER_BASEDOMAIN --docker.exposedbydefault=false 
         ports:
             - "80:80"
             - "443:443"
             - "8080:8080"
-        links:
-            - selfsign-ssl
-            - devops-consul-main
-            - devops-git2consul-main
+        env_file: 
+            - .env
+            - .env.local
+        labels:
+            - "traefik.backend=proxy"
+            - "traefik.frontend.rule=Host:traefik.$DOCKER_DC.$DOCKER_BASEDOMAIN,traefik.docker"
+            - "traefik.port=8080"
+            - "traefik.frontend.entryPoints=http,https"
+            - "traefik.enable=true"
+            - "traefik.docker.network=proxy-test"
         volumes:
-#            - /var/run/docker.sock:/var/run/docker.sock
+            - /var/run/docker.sock:/var/run/docker.sock
             - proxy-acme-data:/etc/traefik/acme/
             - proxy-ssl:/etc/traefik/customssl/
             - /dev/null:/etc/traefik/traefik.toml
         networks:
            - proxy-test
 
+    #These will be set up in KV configs...
     whoami1:
         image: emilevauge/whoami
         networks:
