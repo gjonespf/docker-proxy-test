@@ -14,7 +14,6 @@ services:
             - proxy-test
         env_file: 
             - .env
-            - .env.local
         labels:
             - "traefik.backend=consul-web"
             - "traefik.frontend.rule=Host:consul-web.$DOCKER_DC.$DOCKER_BASEDOMAIN,consul-web.docker"
@@ -30,7 +29,6 @@ services:
             - proxy-test
         env_file: 
             - .env
-            - .env.local
         environment: 
             - CONSUL_ENDPOINT=devops-consul-main
             - CONSUL_PORT=8500

@@ -1,0 +1,99 @@
+version: '2'
+services:
+
+    #Testing the docs in
+    #https://github.com/containous/traefik/blob/master/docs/user-guide/kv-config.md
+
+    devops-etcd-main:
+        image: quay.io/coreos/etcd:v3.1.1
+        restart: always
+        container_name: devops-etcd-main
+        command: etcd -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 -advertise-client-urls http://devops-etcd-main:2379,http://devops-etcd-main:4001
+        ports:
+            - "2379:2379"
+            - "2380:2380"
+            - "4001:4001"
+        oom_score_adj: -500
+        networks:
+            - proxy-test
+
+    devops-etcd-viewer:
+        image: gavinjonespf/etcd-browser
+        ports:
+            - "8000"
+        environment: 
+            - "ETCD_HOST=devops-etcd-main"
+        labels:
+            - "traefik.frontend.rule=Host:etcd-viewer.$DOCKER_DC.$DOCKER_BASEDOMAIN,traefik.docker"
+            - "traefik.port=8000"
+            - "traefik.frontend.entryPoints=http,https"
+            - "traefik.enable=true"
+            - "traefik.docker.network=proxy-test"
+        networks:
+            - proxy-test
+
+    selfsign-ssl:
+        image: prologic/mksslcrt
+        entrypoint: /usr/bin/mksslcert /ssl/traefik.key /ssl/traefik.crt *.docker
+        volumes:
+            - proxy-ssl:/ssl/
+        labels:
+            - "traefik.enable=false"
+
+    proxy:
+        image: ${TRAEFIK_IMAGE}:${TRAEFIK_TAG_VERSION}
+        command: -d \
+            --web --web.address=":${DOCKER_ADMIN_PORT}" --web.readonly=true \
+            --entryPoints='Name:http Address::80' --entryPoints='Name:https Address::443 TLS:/etc/traefik/customssl/traefik.crt,/etc/traefik/customssl/traefik.key' \
+            --etcd --etcd.endpoint="devops-etcd-main:2379" --etcd.watch=true --etcd.prefix=${TRAEFIK_NAMESPACE} \
+            --docker --docker.endpoint="unix:///var/run/docker.sock" --docker.watch=true --docker.domain=$DOCKER_DC.$DOCKER_BASEDOMAIN --docker.exposedbydefault=false 
+        ports:
+            - "80:80"
+            - "443:443"
+            - "8080:8080"
+        env_file: 
+            - .env
+        labels:
+            - "traefik.backend=proxy"
+            - "traefik.frontend.rule=Host:traefik.$DOCKER_DC.$DOCKER_BASEDOMAIN,traefik.docker"
+            - "traefik.port=8080"
+            - "traefik.frontend.entryPoints=http,https"
+            - "traefik.enable=true"
+            - "traefik.docker.network=proxy-test"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - proxy-acme-data:/etc/traefik/acme/
+            - proxy-ssl:/etc/traefik/customssl/
+            - /dev/null:/etc/traefik/traefik.toml
+        # links:
+        #     - devops-etcd-main
+        networks:
+           - proxy-test
+
+    #These will be set up in KV configs...
+    whoami1:
+        image: emilevauge/whoami
+        networks:
+            - proxy-test
+
+    whoami2:
+        image: emilevauge/whoami
+        networks:
+            - proxy-test
+
+    whoami3:
+        image: emilevauge/whoami
+        networks:
+            - proxy-test
+
+    whoami4:
+        image: emilevauge/whoami
+        networks:
+            - proxy-test
+
+volumes:
+  proxy-acme-data: {}
+  proxy-ssl: {}
+
+networks:
+  proxy-test: {}
